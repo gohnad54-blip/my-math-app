@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-page-bg: #fafaf7;
+  --color-surface: #ffffff;
+  --color-primary: #2d6a4f;
+  --color-primary-hover: #1b4332;
+  --color-secondary: #52796f;
+  --color-success: #40916c;
+  --color-success-bg: #d8f3dc;
+  --color-error: #ba3b46;
+  --color-error-bg: #fbe4e6;
+  --color-text-primary: #1b2a26;
+  --color-text-secondary: #5c6b66;
+  --color-border: #e2e8e4;
+}
+
+body {
+  color: var(--color-text-primary);
+  background: var(--color-page-bg);
+}
