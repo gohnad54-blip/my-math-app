@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { pickTopics } from "@/lib/categories";
-import { generateTaskRaw } from "@/lib/gemini";
+import { generateTaskWithRetry } from "@/lib/gemini";
 import { buildGenerationPrompt } from "@/lib/prompts";
+import {
+  enforceRateLimit,
+  getRateLimitIdentifier,
+} from "@/lib/rateLimit";
+import { getSession } from "@/lib/session";
 import {
   generateTaskRequestSchema,
   generatedTaskSchema,
@@ -10,6 +15,20 @@ import {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    const rateLimitId = getRateLimitIdentifier(
+      session.createdAt,
+      request.headers.get("x-forwarded-for"),
+    );
+    const rateLimit = await enforceRateLimit(rateLimitId, "generation");
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Занадто багато запитів, спробуйте за хвилину" },
+        { status: 429 },
+      );
+    }
+
     const body = generateTaskRequestSchema.parse(await request.json());
     const topicIds = pickTopics(body.category, body.difficulty);
     const history = body.taskHistory.slice(-20);
@@ -22,29 +41,27 @@ export async function POST(request: Request) {
       usedSignatures: history.map((item) => item.signature),
     });
 
-    const raw = await generateTaskRaw(prompt);
-    const task = generatedTaskSchema.parse(JSON.parse(raw));
+    const result = await generateTaskWithRetry(prompt, generatedTaskSchema);
 
-    return NextResponse.json(task);
-  } catch (error) {
-    if (error instanceof ZodError) {
+    if (!result.success) {
       return NextResponse.json(
         {
           error: "Не вдалося згенерувати завдання. Спробуйте ще раз.",
           code: "GENERATION_FAILED",
-          details: error.flatten(),
         },
         { status: 503 },
       );
     }
 
-    if (error instanceof SyntaxError) {
+    return NextResponse.json(result.data);
+  } catch (error) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
-          error: "Не вдалося згенерувати завдання. Спробуйте ще раз.",
-          code: "GENERATION_FAILED",
+          error: "Невірний формат запиту",
+          details: error.flatten(),
         },
-        { status: 503 },
+        { status: 400 },
       );
     }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ErrorBanner from "@/components/ErrorBanner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import LogoutButton from "@/components/LogoutButton";
 import ProgressBar from "@/components/ProgressBar";
@@ -139,12 +140,7 @@ export default function TaskPageClient() {
       {isChecking && <LoadingSpinner label="Перевіряємо відповідь…" />}
 
       {checkError && (
-        <p
-          role="alert"
-          className="rounded-lg bg-error-bg px-4 py-3 text-sm text-error"
-        >
-          {checkError}
-        </p>
+        <ErrorBanner message={checkError} onRetry={handleCheckAnswer} />
       )}
 
       {checkResult && (

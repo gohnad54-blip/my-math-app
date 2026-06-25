@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CategorySelector from "@/components/CategorySelector";
 import DifficultySelector from "@/components/DifficultySelector";
+import ErrorBanner from "@/components/ErrorBanner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ProgressBar from "@/components/ProgressBar";
 import type { BaseCategory } from "@/lib/categories";
@@ -90,12 +91,7 @@ export default function GenerateForm() {
       />
 
       {error && (
-        <p
-          role="alert"
-          className="rounded-lg bg-error-bg px-4 py-3 text-sm text-error"
-        >
-          {error}
-        </p>
+        <ErrorBanner message={error} onRetry={handleGenerate} />
       )}
 
       <button
