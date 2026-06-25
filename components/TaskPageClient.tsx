@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import LogoutButton from "@/components/LogoutButton";
+import ProgressBar from "@/components/ProgressBar";
 import ResultPanel from "@/components/ResultPanel";
 import SolutionSteps from "@/components/SolutionSteps";
 import TaskCard from "@/components/TaskCard";
 import type { CheckResult } from "@/lib/checkSchema";
 import { getDifficultyLabel } from "@/lib/categories";
+import {
+  readProgress,
+  recordAnswerResult,
+  type SessionProgress,
+} from "@/lib/progress";
 import { clearCurrentTask, readCurrentTaskRaw } from "@/lib/storage";
 import { generatedTaskSchema, type GeneratedTask } from "@/lib/taskSchema";
 
@@ -22,6 +28,7 @@ export default function TaskPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<SessionProgress>(readProgress());
 
   useEffect(() => {
     const raw = readCurrentTaskRaw();
@@ -82,6 +89,7 @@ export default function TaskPageClient() {
       setCheckResult(data);
       setShowSolution(false);
       setSolutionExpanded(true);
+      setProgress(recordAnswerResult(data.is_correct, task.topics));
     } catch {
       setCheckError(
         "Немає з'єднання з сервером. Перевірте інтернет і спробуйте ще раз.",
@@ -117,6 +125,8 @@ export default function TaskPageClient() {
         </div>
         <LogoutButton />
       </header>
+
+      <ProgressBar progress={progress} />
 
       <TaskCard
         task={task}

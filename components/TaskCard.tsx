@@ -1,4 +1,11 @@
+"use client";
+
+import { useMemo } from "react";
 import type { GeneratedTask } from "@/lib/taskSchema";
+import {
+  formatIntervalAnswer,
+  getAnswerFormatGuide,
+} from "@/lib/answerFormat";
 import MathContent from "@/components/MathContent";
 
 interface TaskCardProps {
@@ -17,6 +24,25 @@ export default function TaskCard({
   isChecking = false,
 }: TaskCardProps) {
   const hintId = "answer-format-hint";
+  const exampleId = "answer-format-example";
+
+  const formatGuide = useMemo(
+    () => getAnswerFormatGuide(task.answer_format_hint, task.correct_answer),
+    [task.answer_format_hint, task.correct_answer],
+  );
+
+  function handleBlur() {
+    if (!formatGuide.isInterval || !userAnswer.trim()) {
+      return;
+    }
+
+    const parameter = formatGuide.example.match(/^([a-zA-Z])/)?.[1] ?? "a";
+    const formatted = formatIntervalAnswer(userAnswer, parameter);
+
+    if (formatted !== userAnswer) {
+      onUserAnswerChange(formatted);
+    }
+  }
 
   return (
     <article className="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
@@ -49,11 +75,20 @@ export default function TaskCard({
           type="text"
           value={userAnswer}
           onChange={(event) => onUserAnswerChange(event.target.value)}
-          aria-describedby={hintId}
-          placeholder="Введіть відповідь"
+          onBlur={handleBlur}
+          aria-describedby={`${hintId} ${exampleId}`}
+          placeholder={formatGuide.placeholder}
           disabled={isChecking}
           className="min-h-[44px] rounded-lg border border-border bg-surface px-4 text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
         />
+        <p id={exampleId} className="text-sm text-muted">
+          {formatGuide.example}
+        </p>
+        {formatGuide.isInterval && (
+          <p className="text-xs leading-relaxed text-muted">
+            {formatGuide.helperText}
+          </p>
+        )}
         <button
           type="button"
           onClick={onCheckAnswer}

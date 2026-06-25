@@ -1,6 +1,16 @@
 import { getIronSession } from "iron-session";
 import { NextRequest, NextResponse } from "next/server";
-import { sessionOptions, type SessionData } from "@/lib/session-options";
+import { getSessionOptions, type SessionData } from "@/lib/session-options";
+
+function isProtectedPage(pathname: string): boolean {
+  return (
+    pathname === "/" ||
+    pathname === "/generate" ||
+    pathname.startsWith("/generate/") ||
+    pathname === "/task" ||
+    pathname.startsWith("/task/")
+  );
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,16 +20,32 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-  const session = await getIronSession<SessionData>(
-    request,
-    response,
-    sessionOptions,
-  );
+  let session: SessionData;
+
+  try {
+    session = await getIronSession<SessionData>(
+      request,
+      response,
+      getSessionOptions(),
+    );
+  } catch (error) {
+    console.error("middleware session error:", error);
+
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Сервер не налаштовано" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 
   if (session.authenticated) {
-    if (pathname === "/login") {
+    if (pathname === "/login" || pathname === "/") {
       return NextResponse.redirect(new URL("/generate", request.url));
     }
+
     return response;
   }
 
@@ -27,7 +53,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (pathname.startsWith("/generate") || pathname.startsWith("/task")) {
+  if (pathname === "/login") {
+    return response;
+  }
+
+  if (isProtectedPage(pathname)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -35,5 +65,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/generate/:path*", "/task/:path*", "/api/:path*"],
+  matcher: [
+    "/",
+    "/login",
+    "/generate",
+    "/generate/:path*",
+    "/task",
+    "/task/:path*",
+    "/api/:path*",
+  ],
 };

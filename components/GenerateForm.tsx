@@ -5,27 +5,16 @@ import { useRouter } from "next/navigation";
 import CategorySelector from "@/components/CategorySelector";
 import DifficultySelector from "@/components/DifficultySelector";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import ProgressBar from "@/components/ProgressBar";
 import type { BaseCategory } from "@/lib/categories";
+import { readProgress } from "@/lib/progress";
 import {
   readLastSelection,
   writeCurrentTask,
   writeLastSelection,
 } from "@/lib/storage";
+import { appendTaskHistory, readTaskHistory } from "@/lib/taskHistory";
 import type { Difficulty, GeneratedTask } from "@/lib/taskSchema";
-
-function readTaskHistory() {
-  try {
-    const raw = sessionStorage.getItem("taskHistory");
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed.slice(-20) : [];
-  } catch {
-    return [];
-  }
-}
 
 export default function GenerateForm() {
   const router = useRouter();
@@ -33,8 +22,11 @@ export default function GenerateForm() {
   const [difficulty, setDifficulty] = useState<Difficulty>("basic");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(readProgress());
 
   useEffect(() => {
+    setProgress(readProgress());
+
     const saved = readLastSelection();
     if (!saved) {
       return;
@@ -70,6 +62,7 @@ export default function GenerateForm() {
 
       writeCurrentTask(data);
       writeLastSelection({ category, difficulty });
+      appendTaskHistory(data);
       router.push("/task");
     } catch {
       setError(
@@ -82,6 +75,8 @@ export default function GenerateForm() {
 
   return (
     <div className="flex flex-col gap-8">
+      <ProgressBar progress={progress} />
+
       <CategorySelector
         value={category}
         onChange={setCategory}
