@@ -9,7 +9,7 @@ import SolutionSteps from "@/components/SolutionSteps";
 import TaskCard from "@/components/TaskCard";
 import type { CheckResult } from "@/lib/checkSchema";
 import { getDifficultyLabel } from "@/lib/categories";
-import { readCurrentTaskRaw } from "@/lib/storage";
+import { clearCurrentTask, readCurrentTaskRaw } from "@/lib/storage";
 import { generatedTaskSchema, type GeneratedTask } from "@/lib/taskSchema";
 
 export default function TaskPageClient() {
@@ -91,6 +91,11 @@ export default function TaskPageClient() {
     }
   }
 
+  function handleNextTask() {
+    clearCurrentTask();
+    router.push("/generate");
+  }
+
   if (isLoading || !task) {
     return (
       <main className="mx-auto flex min-h-screen max-w-2xl items-center justify-center px-4 py-8">
@@ -156,6 +161,14 @@ export default function TaskPageClient() {
               onToggle={() => setSolutionExpanded((value) => !value)}
             />
           )}
+
+          <button
+            type="button"
+            onClick={handleNextTask}
+            className="min-h-[44px] rounded-lg bg-primary px-4 font-medium text-white transition hover:bg-primary-hover"
+          >
+            Наступне завдання
+          </button>
         </>
       )}
     </main>
