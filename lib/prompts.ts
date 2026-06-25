@@ -88,3 +88,31 @@ JSON-ВИВІД:
 - solution_steps — послідовні кроки з step_number, title, content.
 - coefficients_signature — короткий рядок ключових чисел/букв для дедуплікації.`;
 }
+
+export interface CheckPromptParams {
+  taskStatement: string;
+  answerFormatHint: string;
+  correctAnswer: string;
+  userAnswer: string;
+}
+
+export function buildCheckPrompt({
+  taskStatement,
+  answerFormatHint,
+  correctAnswer,
+  userAnswer,
+}: CheckPromptParams): string {
+  return `Ти — суворий, але справедливий перевіряючий математичних відповідей.
+Умова завдання: ${taskStatement}
+Очікуваний формат відповіді: ${answerFormatHint}
+Правильна відповідь: ${correctAnswer}
+Відповідь користувача: ${userAnswer}
+
+Визнач, чи є відповідь користувача математично ЕКВІВАЛЕНТНОЮ правильній відповіді, навіть якщо запис відрізняється (наприклад, "a∈(1;+∞)" та "a>1" — еквівалентні; "x=2" та "x = 2.0" — еквівалентні; неповна відповідь, що пропускає частину множини значень параметра, — НЕ еквівалентна).
+
+Поверни СТРОГО JSON без жодного додаткового тексту за схемою:
+{
+  "is_correct": boolean,
+  "reasoning": "string — короткий коментар українською, чому правильно/неправильно"
+}`;
+}

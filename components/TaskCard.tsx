@@ -5,12 +5,16 @@ interface TaskCardProps {
   task: GeneratedTask;
   userAnswer: string;
   onUserAnswerChange: (value: string) => void;
+  onCheckAnswer: () => void;
+  isChecking?: boolean;
 }
 
 export default function TaskCard({
   task,
   userAnswer,
   onUserAnswerChange,
+  onCheckAnswer,
+  isChecking = false,
 }: TaskCardProps) {
   const hintId = "answer-format-hint";
 
@@ -27,10 +31,13 @@ export default function TaskCard({
       </section>
 
       <section className="rounded-lg bg-page px-4 py-3">
-        <p id={hintId} className="text-sm text-muted">
+        <div id={hintId} className="text-sm text-muted">
           <span className="font-medium text-foreground">Формат відповіді: </span>
-          {task.answer_format_hint}
-        </p>
+          <MathContent
+            content={task.answer_format_hint}
+            className="mt-1 text-sm leading-relaxed text-muted"
+          />
+        </div>
       </section>
 
       <section className="flex flex-col gap-3">
@@ -44,14 +51,16 @@ export default function TaskCard({
           onChange={(event) => onUserAnswerChange(event.target.value)}
           aria-describedby={hintId}
           placeholder="Введіть відповідь"
-          className="min-h-[44px] rounded-lg border border-border bg-surface px-4 text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary"
+          disabled={isChecking}
+          className="min-h-[44px] rounded-lg border border-border bg-surface px-4 text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
         />
         <button
           type="button"
-          disabled={userAnswer.trim().length === 0}
+          onClick={onCheckAnswer}
+          disabled={isChecking || userAnswer.trim().length === 0}
           className="min-h-[44px] rounded-lg bg-primary px-4 font-medium text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Перевірити
+          {isChecking ? "Перевіряємо…" : "Перевірити"}
         </button>
       </section>
     </article>

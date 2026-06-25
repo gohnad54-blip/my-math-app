@@ -5,6 +5,8 @@ export type {
   SolutionStep,
 } from "@/lib/taskSchema";
 
+export type { CheckAnswerRequest, CheckResult } from "@/lib/checkSchema";
+
 export type {
   BaseCategory,
   Category,
