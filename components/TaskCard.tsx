@@ -6,6 +6,7 @@ import {
   formatIntervalAnswer,
   getAnswerFormatGuide,
 } from "@/lib/answerFormat";
+import AnswerSymbolPad, { useAnswerInputSelection } from "@/components/AnswerSymbolPad";
 import MathContent from "@/components/MathContent";
 
 interface TaskCardProps {
@@ -30,6 +31,7 @@ export default function TaskCard({
     () => getAnswerFormatGuide(task.answer_format_hint, task.correct_answer),
     [task.answer_format_hint, task.correct_answer],
   );
+  const { inputRef, saveSelection, insertSymbol } = useAnswerInputSelection();
 
   function handleBlur() {
     if (!formatGuide.isInterval || !userAnswer.trim()) {
@@ -71,15 +73,25 @@ export default function TaskCard({
           Ваша відповідь
         </label>
         <input
+          ref={inputRef}
           id="user-answer"
           type="text"
           value={userAnswer}
           onChange={(event) => onUserAnswerChange(event.target.value)}
+          onSelect={saveSelection}
+          onKeyUp={saveSelection}
+          onClick={saveSelection}
           onBlur={handleBlur}
           aria-describedby={`${hintId} ${exampleId}`}
           placeholder={formatGuide.placeholder}
           disabled={isChecking}
           className="min-h-[44px] rounded-lg border border-border bg-surface px-4 text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+        />
+        <AnswerSymbolPad
+          disabled={isChecking}
+          onInsert={(symbol) =>
+            insertSymbol(userAnswer, symbol, onUserAnswerChange)
+          }
         />
         <p id={exampleId} className="text-sm text-muted">
           {formatGuide.example}
