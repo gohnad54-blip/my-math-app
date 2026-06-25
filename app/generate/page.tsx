@@ -1,4 +1,4 @@
-import GenerateTaskDebug from "@/components/GenerateTaskDebug";
+import GenerateForm from "@/components/GenerateForm";
 import LogoutButton from "@/components/LogoutButton";
 
 export default function GeneratePage() {
@@ -11,12 +11,7 @@ export default function GeneratePage() {
         <LogoutButton />
       </header>
 
-      <p className="mb-6 text-sm text-muted">
-        Тимчасовий екран Етапу 3: генерація завдання через Gemini API з виводом
-        сирого JSON.
-      </p>
-
-      <GenerateTaskDebug />
+      <GenerateForm />
     </main>
   );
 }

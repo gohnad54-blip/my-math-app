@@ -23,6 +23,19 @@ export const BASE_CATEGORY_OPTIONS = [
   { id: "random" as const, label: "Випадкова" },
 ];
 
+export const DIFFICULTY_OPTIONS: { id: Difficulty; label: string }[] = [
+  { id: "basic", label: "Базовий" },
+  { id: "medium", label: "Середній" },
+  { id: "hard", label: "Складний" },
+];
+
+export function getDifficultyLabel(difficulty: Difficulty): string {
+  return (
+    DIFFICULTY_OPTIONS.find((option) => option.id === difficulty)?.label ??
+    difficulty
+  );
+}
+
 export const TOPIC_STYLE_DESCRIPTIONS: Record<CategoryId, string> = {
   linear:
     "Лінійні рівняння, нерівності або системи з параметром; дослідження параметра по випадках, аналіз кількості розв'язків.",
