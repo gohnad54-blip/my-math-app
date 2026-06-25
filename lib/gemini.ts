@@ -42,7 +42,7 @@ function timeout(ms: number): Promise<never> {
   });
 }
 
-function formatGeminiError(error: unknown): Record<string, unknown> {
+export function formatGeminiError(error: unknown): Record<string, unknown> {
   const details: Record<string, unknown> = {
     type: error instanceof Error ? error.constructor.name : typeof error,
     message: error instanceof Error ? error.message : String(error),
